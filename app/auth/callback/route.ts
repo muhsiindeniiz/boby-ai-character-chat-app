@@ -21,6 +21,5 @@ export async function GET(request: Request) {
         }
     }
 
-    // Redirect to chat page after successful authentication
     return NextResponse.redirect(`${origin}/chat`);
 }

@@ -20,14 +20,11 @@ export function useStreaming(
     const typingIntervalRef = useRef<NodeJS.Timeout | null>(null);
     const supabase = createClient();
 
-    // Typing effect - karakter karakter yazdırma
     useEffect(() => {
-        // Eğer gösterilen mesaj tam mesaja ulaştıysa, durma
         if (displayedStreamingMessage === streamingMessage) {
             return;
         }
 
-        // Eğer gösterilen mesaj tam mesajdan kısaysa, devam et
         if (displayedStreamingMessage.length < streamingMessage.length) {
             if (typingIntervalRef.current) {
                 clearTimeout(typingIntervalRef.current);
@@ -85,7 +82,6 @@ export function useStreaming(
         setSending(true);
 
         try {
-            // 1. Kullanıcı mesajını kaydet
             const { data: savedUserMessage, error: userError } = await supabase
                 .from('messages')
                 .insert({
@@ -100,13 +96,11 @@ export function useStreaming(
 
             addMessage(savedUserMessage);
 
-            // 2. Chat timestamp'ini güncelle
             await supabase
                 .from('chats')
                 .update({ updated_at: new Date().toISOString() })
                 .eq('id', chat.id);
 
-            // 3. AI'dan yanıt almaya başla
             if (!chat.character) throw new Error('Character not found');
 
             abortControllerRef.current = new AbortController();
@@ -131,13 +125,11 @@ export function useStreaming(
 
             if (!response.ok) throw new Error('Failed to get response');
 
-            // 4. Sending'i kapat, streaming'i aç
             setSending(false);
             setStreaming(true);
             setStreamingMessage('');
             setDisplayedStreamingMessage('');
 
-            // 5. Stream'i oku
             const reader = response.body?.getReader();
             const decoder = new TextDecoder();
             let fullResponse = '';
@@ -161,7 +153,6 @@ export function useStreaming(
                 }
             }
 
-            // 6. Typing effect'in bitmesini bekle
             await new Promise<void>((resolve) => {
                 const checkInterval = setInterval(() => {
                     if (displayedStreamingMessage.length >= fullResponse.length) {
@@ -170,20 +161,17 @@ export function useStreaming(
                     }
                 }, 50);
 
-                // Maksimum 15 saniye bekle
                 setTimeout(() => {
                     clearInterval(checkInterval);
                     resolve();
                 }, 15000);
             });
 
-            // 7. Mesajı kaydet
             const savedMessage = await saveMessage(fullResponse);
             if (savedMessage) {
                 addMessage(savedMessage);
             }
 
-            // 8. State'leri temizle
             setStreamingMessage('');
             setDisplayedStreamingMessage('');
             setStreaming(false);
@@ -201,7 +189,6 @@ export function useStreaming(
         }
     };
 
-    // Cleanup
     useEffect(() => {
         return () => {
             if (typingIntervalRef.current) {

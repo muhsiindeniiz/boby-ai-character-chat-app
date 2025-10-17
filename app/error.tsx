@@ -23,12 +23,12 @@ export default function Error({
                     <AlertCircle className="h-8 w-8 text-red-600" />
                 </div>
                 <h2 className="mb-2 text-2xl font-bold text-gray-900">
-                    Bir şeyler ters gitti
+                    Something went wrong
                 </h2>
                 <p className="mb-6 text-gray-600">
                     {error.message || 'Beklenmeyen bir hata oluştu'}
                 </p>
-                <Button onClick={reset}>Tekrar Dene</Button>
+                <Button onClick={reset}>Try Again</Button>
             </div>
         </div>
     );
