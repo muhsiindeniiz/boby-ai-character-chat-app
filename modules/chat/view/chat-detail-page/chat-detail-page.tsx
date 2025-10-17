@@ -117,7 +117,7 @@ export function ChatDetailPage({ chatId }: ChatDetailPageProps) {
             <PageHeader title={chat.character?.name || 'Chat'} showBack />
 
             <main className="flex-1 overflow-auto">
-                <div className="mx-auto max-w-2xl space-y-4 p-4 pb-24">
+                <div className="mx-auto max-w-xl space-y-4 p-4 pb-24">
                     <AnimatePresence mode="popLayout">
                         {messages.map((message) => (
                             <MessageBubble
