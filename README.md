@@ -4,7 +4,7 @@ A modern, mobile-first character chat application built with Next.js, featuring 
 
 ## 🌟 Live Demo
 
-🔗 **[View Live Demo on Vercel](your-deployment-url)**
+🔗 **[View Live Demo on Vercel](https://boby-ai-character-chat-app.vercel.app/)**
 
 ## 📖 Overview
 
@@ -77,7 +77,7 @@ Before you begin, ensure you have the following installed:
 
 ### 1. Clone the Repository
 ```bash
-git clone https://github.com/yourusername/boby-ai.git
+git clone https://github.com/muhsiindeniiz/boby-ai-character-chat-app.git
 cd boby-ai
 ```
 
@@ -224,37 +224,123 @@ Open [http://localhost:3000](http://localhost:3000) in your browser to see the a
 ## 📁 Project Structure
 ```
 .
-├── app/                    # Next.js app directory
-│   ├── api/               # API routes
-│   │   └── chat/          # Chat API endpoint
-│   ├── auth/              # Authentication pages
-│   │   ├── callback/      # OAuth callback handler
-│   │   └── sign-in/       # Sign-in page
-│   ├── chat/              # Chat pages
-│   │   ├── [chatId]/      # Individual chat page
-│   │   └── page.tsx       # Chat list page
-│   ├── characters/        # Character selection page
-│   ├── layout.tsx         # Root layout
-│   └── page.tsx           # Home page (redirects)
-├── core/                   # Core functionality
-│   ├── api/               # API clients
-│   │   ├── groq/          # Groq API integration
-│   │   └── supabase/      # Supabase client setup
-│   └── ui/                # UI components (shadcn/ui)
-├── modules/               # Feature modules
-│   ├── auth/              # Authentication module
-│   ├── characters/        # Characters module
-│   └── chat/              # Chat module
-├── packages/              # Shared packages
-│   ├── asset/             # Fonts, images, styles
-│   ├── component/         # Reusable components
-│   ├── constant/          # Constants
-│   ├── hooks/             # Custom React hooks
-│   ├── provider/          # Context providers
-│   ├── theme/             # Theme configuration
-│   ├── type/              # TypeScript types
-│   └── utils/             # Utility functions
-└── public/                # Static assets
+├── app/                          # Next.js 15 App Router
+│   ├── api/
+│   │   └── chat/
+│   │       └── route.ts          # Streaming chat API endpoint
+│   ├── auth/
+│   │   ├── callback/
+│   │   │   └── route.ts          # OAuth callback handler
+│   │   └── sign-in/
+│   │       └── page.tsx          # Google sign-in page
+│   ├── characters/
+│   │   └── page.tsx              # Character selection interface
+│   ├── chat/
+│   │   ├── [chatId]/
+│   │   │   └── page.tsx          # Individual chat conversation
+│   │   ├── loading.tsx           # Loading UI for chat list
+│   │   └── page.tsx              # Chat history list
+│   ├── error.tsx                 # Global error boundary
+│   ├── layout.tsx                # Root layout with providers
+│   └── page.tsx                  # Home page (auth redirect)
+│
+├── core/                         # Core infrastructure
+│   ├── api/
+│   │   ├── groq/
+│   │   │   ├── client.ts         # Groq SDK client configuration
+│   │   │   ├── utils.ts          # Message preparation & error handling
+│   │   │   └── index.ts          # Public API exports
+│   │   └── supabase/
+│   │       ├── client.ts         # Browser Supabase client
+│   │       ├── server.ts         # Server-side Supabase client
+│   │       └── middleware.ts     # Session management middleware
+│   └── ui/
+│       ├── components/           # shadcn/ui base components
+│       │   ├── button.tsx
+│       │   ├── card.tsx
+│       │   ├── input.tsx
+│       │   └── ...
+│       └── type/
+│           └── cva.ts            # Class variance authority types
+│
+├── modules/                      # Feature-based modules
+│   ├── auth/
+│   │   ├── hooks/
+│   │   │   └── use-auth.ts       # Authentication state hook
+│   │   ├── providers/
+│   │   │   └── auth-provider.tsx # Auth context provider
+│   │   ├── utils/
+│   │   │   └── auth.utils.ts     # Auth helper functions
+│   │   └── view/
+│   │       └── sign-in-page/     # Sign-in page component
+│   │
+│   ├── characters/
+│   │   ├── components/
+│   │   │   └── character-card/   # Character selection card
+│   │   ├── constants/
+│   │   │   └── characters.ts     # Character definitions & prompts
+│   │   ├── types/
+│   │   │   └── character.types.ts
+│   │   └── view/
+│   │       └── characters-page/  # Character selection page
+│   │
+│   └── chat/
+│       ├── components/
+│       │   ├── chat-list-item/   # Chat history item
+│       │   ├── message-bubble/   # Message display with markdown
+│       │   └── typing-indicator/ # Loading animation
+│       ├── hooks/
+│       │   ├── use-chat.ts       # Individual chat data
+│       │   ├── use-chat-list.ts  # Chat history management
+│       │   ├── use-messages.ts   # Real-time message sync
+│       │   └── use-streaming.ts  # AI response streaming
+│       ├── types/
+│       │   └── chat.types.ts     # Chat & message types
+│       └── view/
+│           ├── chat-detail-page/ # Chat conversation interface
+│           └── chat-list-page/   # Chat history page
+│
+├── packages/                     # Shared utilities & components
+│   ├── asset/
+│   │   ├── font/
+│   │   │   ├── inter/            # Inter font family
+│   │   │   └── sf-mono/          # SF Mono font family
+│   │   ├── image/                # Static images
+│   │   └── style/
+│   │       └── global.scss       # Global styles
+│   │
+│   ├── component/
+│   │   ├── bottom-navigation/    # Mobile navigation bar
+│   │   ├── page-header/          # Page title header
+│   │   ├── loading-skeleton/     # Loading placeholders
+│   │   ├── empty-state/          # Empty state messages
+│   │   └── error-state/          # Error messages
+│   │
+│   ├── constant/
+│   │   └── font-collection.ts    # Font configurations
+│   │
+│   ├── hooks/
+│   │   ├── use-classnames.ts     # Dynamic className helper
+│   │   └── use-debounce.ts       # Debounce utility hook
+│   │
+│   ├── provider/
+│   │   ├── client-layout/        # Client-side providers
+│   │   ├── root-html/            # HTML root wrapper
+│   │   └── root-body/            # Body wrapper with fonts
+│   │
+│   ├── theme/
+│   │   └── palette.ts            # Color system configuration
+│   │
+│   ├── type/
+│   │   └── common.ts             # Shared TypeScript types
+│   │
+│   └── utils/
+│       ├── cn.ts                 # Tailwind class merger
+│       ├── format-date.ts        # Date formatting utilities
+│       ├── truncate-text.ts      # Text truncation helper
+│       └── cookie.ts             # Cookie management
+│
+└── public/                       # Static assets served at root
 ```
 
 ## 🚢 Deployment
@@ -264,7 +350,7 @@ Open [http://localhost:3000](http://localhost:3000) in your browser to see the a
 1. **Push your code to GitHub**
 
 2. **Import your repository in Vercel**
-   - Go to [vercel.com](https://vercel.com)
+   - Go to [https://boby-ai-character-chat-app.vercel.app/](https://boby-ai-character-chat-app.vercel.app/)
    - Click "New Project"
    - Import your GitHub repository
 
