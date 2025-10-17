@@ -19,7 +19,7 @@ export function ChatListPage() {
         loading,
         deletingId,
         deleteChat,
-        checkPendingCharacter
+        loadChats
     } = useChatList();
 
     useEffect(() => {
@@ -29,9 +29,9 @@ export function ChatListPage() {
         }
 
         if (user) {
-            checkPendingCharacter();
+            loadChats();
         }
-    }, [user, authLoading, router, checkPendingCharacter]);
+    }, [user, authLoading, router, loadChats]);
 
     if (authLoading || loading) {
         return (

@@ -11,12 +11,22 @@ export function useChat(chatId: string) {
     const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
+        if (!chatId) {
+            setError('Invalid chat ID');
+            setLoading(false);
+            return;
+        }
+
         const supabase = createClient();
+        let isMounted = true;
         let retryCount = 0;
-        const maxRetries = 3;
+        const maxRetries = 5;
+        const retryDelay = 300;
 
         const loadChat = async () => {
             try {
+                if (!isMounted) return;
+
                 setLoading(true);
                 setError(null);
 
@@ -26,23 +36,24 @@ export function useChat(chatId: string) {
                     .eq('id', chatId)
                     .single();
 
+                if (!isMounted) return;
+
                 if (supabaseError) {
-                    // If chat not found and we haven't exceeded retries, try again
+                    // Retry on "not found" errors
                     if (supabaseError.code === 'PGRST116' && retryCount < maxRetries) {
                         retryCount++;
-                        console.log(`Chat not found, retrying... (${retryCount}/${maxRetries})`);
-                        setTimeout(loadChat, 500 * retryCount); // Exponential backoff
+                        setTimeout(() => {
+                            if (isMounted) loadChat();
+                        }, retryDelay * retryCount);
                         return;
                     }
 
-                    console.error('Supabase error:', supabaseError);
                     setError(supabaseError.message || 'Failed to load chat');
                     setLoading(false);
                     return;
                 }
 
                 if (!data) {
-                    console.error('No chat found with id:', chatId);
                     setError('Chat not found');
                     setLoading(false);
                     return;
@@ -51,7 +62,6 @@ export function useChat(chatId: string) {
                 const character = getCharacterById(data.character_id);
 
                 if (!character) {
-                    console.error('Character not found with id:', data.character_id);
                     setError('Character not found');
                     setLoading(false);
                     return;
@@ -63,18 +73,18 @@ export function useChat(chatId: string) {
                 });
                 setLoading(false);
             } catch (err) {
+                if (!isMounted) return;
                 console.error('Error loading chat:', err);
                 setError('An unexpected error occurred');
                 setLoading(false);
             }
         };
 
-        if (chatId) {
-            loadChat();
-        } else {
-            setError('Invalid chat ID');
-            setLoading(false);
-        }
+        loadChat();
+
+        return () => {
+            isMounted = false;
+        };
     }, [chatId]);
 
     return { chat, loading, error };

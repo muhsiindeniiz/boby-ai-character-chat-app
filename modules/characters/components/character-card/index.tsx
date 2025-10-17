@@ -9,14 +9,22 @@ interface CharacterCardProps {
     character: Character;
     isSelected: boolean;
     onSelect: () => void;
+    disabled?: boolean;
 }
 
-export function CharacterCard({ character, isSelected, onSelect }: CharacterCardProps) {
+export function CharacterCard({
+    character,
+    isSelected,
+    onSelect,
+    disabled = false
+}: CharacterCardProps) {
     return (
         <Card
-            onClick={onSelect}
-            className={`cursor-pointer overflow-hidden transition-all hover:scale-[1.02] hover:shadow-lg active:scale-[0.98] ${isSelected ? 'ring-2 ring-offset-2' : ''
-                }`}
+            onClick={disabled ? undefined : onSelect}
+            className={`overflow-hidden transition-all ${disabled
+                    ? 'cursor-not-allowed opacity-50'
+                    : 'cursor-pointer hover:scale-[1.02] hover:shadow-lg active:scale-[0.98]'
+                } ${isSelected ? 'ring-2 ring-offset-2' : ''}`}
             style={{
                 borderColor: `${character.color}40`,
                 ...(isSelected && { '--tw-ring-color': character.color } as React.CSSProperties),

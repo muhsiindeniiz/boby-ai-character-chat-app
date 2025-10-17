@@ -110,13 +110,15 @@ export function ChatDetailPage({ chatId }: ChatDetailPageProps) {
         );
     }
 
+    const isInputDisabled = sending || streaming;
+
     return (
         <div className="flex h-screen flex-col" style={{ backgroundColor: '#F9FAFB' }}>
             <PageHeader title={chat.character?.name || 'Chat'} showBack />
 
             <main className="flex-1 overflow-auto">
                 <div className="mx-auto max-w-2xl space-y-4 p-4 pb-24">
-                    <AnimatePresence initial={false}>
+                    <AnimatePresence mode="popLayout">
                         {messages.map((message) => (
                             <MessageBubble
                                 key={message.id}
@@ -125,8 +127,10 @@ export function ChatDetailPage({ chatId }: ChatDetailPageProps) {
                             />
                         ))}
 
-                        {displayedStreamingMessage && chat.character && (
+                        {/* Streaming message gösterimi */}
+                        {streaming && displayedStreamingMessage && chat.character && (
                             <MessageBubble
+                                key="streaming"
                                 message={{
                                     id: 'streaming',
                                     chat_id: chat.id,
@@ -139,14 +143,22 @@ export function ChatDetailPage({ chatId }: ChatDetailPageProps) {
                             />
                         )}
 
-                        {sending && <TypingIndicator />}
+                        {/* Loading indicator - AI yanıt gelene kadar */}
+                        {sending && <TypingIndicator character={chat.character} />}
                     </AnimatePresence>
 
                     <div ref={messagesEndRef} />
                 </div>
             </main>
 
-            <div className="fixed bottom-0 left-0 right-0 border-t" style={{ borderColor: '#E5E7EB', backgroundColor: 'rgba(255, 255, 255, 0.8)', backdropFilter: 'blur(12px)' }}>
+            <div
+                className="fixed bottom-0 left-0 right-0 border-t"
+                style={{
+                    borderColor: '#E5E7EB',
+                    backgroundColor: 'rgba(255, 255, 255, 0.8)',
+                    backdropFilter: 'blur(12px)',
+                }}
+            >
                 <div className="mx-auto flex max-w-lg items-end gap-2 p-4">
                     <Input
                         ref={inputRef}
@@ -154,16 +166,16 @@ export function ChatDetailPage({ chatId }: ChatDetailPageProps) {
                         onChange={(e) => setInput(e.target.value)}
                         onKeyPress={handleKeyPress}
                         placeholder={`Message ${chat.character?.name || ''}...`}
-                        disabled={sending || streaming}
+                        disabled={isInputDisabled}
                         className="min-h-[44px] resize-none rounded-full"
                     />
                     <Button
                         onClick={handleSend}
-                        disabled={!input.trim() || sending || streaming}
+                        disabled={!input.trim() || isInputDisabled}
                         size="icon"
                         className="h-11 w-11 shrink-0 rounded-full"
                     >
-                        {sending || streaming ? (
+                        {isInputDisabled ? (
                             <Loader2 className="h-5 w-5 animate-spin" />
                         ) : (
                             <Send className="h-5 w-5" />

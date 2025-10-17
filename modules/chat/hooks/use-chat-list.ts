@@ -13,6 +13,7 @@ export function useChatList() {
     const [chats, setChats] = useState<Chat[]>([]);
     const [loading, setLoading] = useState(true);
     const [deletingId, setDeletingId] = useState<string | null>(null);
+    const [creating, setCreating] = useState(false);
 
     const loadChats = useCallback(async () => {
         if (!user) {
@@ -45,7 +46,7 @@ export function useChatList() {
                 if (count && count > 0) {
                     chatsWithMessages.push(chat as Chat);
                 } else {
-                    // Delete empty chats
+                    // Delete empty chats silently
                     await supabase.from('chats').delete().eq('id', chat.id);
                 }
             }
@@ -61,15 +62,16 @@ export function useChatList() {
 
     const createNewChat = useCallback(
         async (characterId: string) => {
-            if (!user) return;
+            if (!user || creating) return null;
 
+            setCreating(true);
             const supabase = createClient();
 
             try {
                 const character = getCharacterById(characterId);
                 if (!character) {
                     console.error('Character not found:', characterId);
-                    return;
+                    return null;
                 }
 
                 const { data: chat, error } = await supabase
@@ -87,36 +89,31 @@ export function useChatList() {
                     throw error;
                 }
 
-                // Wait a bit to ensure the chat is fully created
-                await new Promise(resolve => setTimeout(resolve, 100));
+                // Verify chat was created by fetching it
+                const { data: verifiedChat, error: verifyError } = await supabase
+                    .from('chats')
+                    .select('*')
+                    .eq('id', chat.id)
+                    .single();
 
-                // Navigate to the new chat
-                router.push(`/chat/${chat.id}`);
+                if (verifyError || !verifiedChat) {
+                    throw new Error('Failed to verify chat creation');
+                }
+
+                return verifiedChat.id;
             } catch (error) {
                 console.error('Error creating chat:', error);
                 alert('Failed to create chat. Please try again.');
+                return null;
+            } finally {
+                setCreating(false);
             }
         },
-        [user, router]
+        [user, creating]
     );
-
-    const checkPendingCharacter = useCallback(async () => {
-        const pendingCharacter = sessionStorage.getItem('pendingCharacter');
-
-        if (pendingCharacter && user) {
-            sessionStorage.removeItem('pendingCharacter');
-            await createNewChat(pendingCharacter);
-        } else {
-            await loadChats();
-        }
-    }, [user, createNewChat, loadChats]);
 
     const deleteChat = useCallback(
         async (chatId: string) => {
-            if (!confirm('Are you sure you want to delete this chat?')) {
-                return;
-            }
-
             setDeletingId(chatId);
 
             const supabase = createClient();
@@ -163,8 +160,8 @@ export function useChatList() {
         chats,
         loading,
         deletingId,
+        creating,
         deleteChat,
-        checkPendingCharacter,
         loadChats,
         createNewChat,
     };
