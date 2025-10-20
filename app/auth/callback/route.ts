@@ -5,6 +5,7 @@ export async function GET(request: Request) {
     const requestUrl = new URL(request.url);
     const code = requestUrl.searchParams.get('code');
     const origin = requestUrl.origin;
+    const next = requestUrl.searchParams.get('next') ?? '/chat';
 
     if (code) {
         try {
@@ -15,11 +16,15 @@ export async function GET(request: Request) {
                 console.error('Error exchanging code for session:', error);
                 return NextResponse.redirect(`${origin}/?error=auth_failed`);
             }
+
+            // Başarılı authentication sonrası yönlendirme
+            return NextResponse.redirect(`${origin}${next}`);
         } catch (error) {
             console.error('Auth callback error:', error);
             return NextResponse.redirect(`${origin}/?error=auth_failed`);
         }
     }
 
-    return NextResponse.redirect(`${origin}/chat`);
+    // Code yoksa ana sayfaya yönlendir
+    return NextResponse.redirect(`${origin}/`);
 }

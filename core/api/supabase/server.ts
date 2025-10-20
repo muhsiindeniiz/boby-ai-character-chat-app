@@ -18,7 +18,7 @@ export const createClient = async () => {
                             cookieStore.set(name, value, options)
                         );
                     } catch {
-                        // Server Component
+                        // Server Component'te set çağrısı başarısız olabilir
                     }
                 },
             },

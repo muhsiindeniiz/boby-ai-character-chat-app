@@ -29,25 +29,33 @@ export async function updateSession(request: NextRequest) {
         }
     );
 
+    // User'ı almayı dene
     const {
         data: { user },
     } = await supabase.auth.getUser();
 
     const path = request.nextUrl.pathname;
 
-    // Define public paths that don't require authentication
-    const publicPaths = ['/', '/auth/callback'];
+    // Public paths tanımla
+    const publicPaths = ['/', '/sign-in'];
+    const authPaths = ['/auth/callback'];
     const isPublicPath = publicPaths.includes(path);
+    const isAuthPath = authPaths.includes(path);
 
-    // If user is logged in and trying to access home page, redirect to chat
-    if (user && path === '/') {
+    // Auth callback path'i için özel işlem yapma, direkt geç
+    if (isAuthPath) {
+        return supabaseResponse;
+    }
+
+    // User varsa ve public path'teyse (örn. sign-in veya home), chat'e yönlendir
+    if (user && isPublicPath) {
         const url = request.nextUrl.clone();
         url.pathname = '/chat';
         return NextResponse.redirect(url);
     }
 
-    // If user is not logged in and trying to access protected routes
-    if (!user && !isPublicPath && !path.startsWith('/auth')) {
+    // User yoksa ve protected path'teyse, ana sayfaya yönlendir
+    if (!user && !isPublicPath) {
         const url = request.nextUrl.clone();
         url.pathname = '/';
         return NextResponse.redirect(url);
