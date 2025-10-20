@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import { AuthProvider } from '@/modules/auth/providers/auth-provider';
+import { ClientLayout } from '@/packages/provider/client-layout';
 import '@/packages/asset/style/global.scss';
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
@@ -18,7 +19,9 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={`${inter.variable} antialiased`} suppressHydrationWarning>
-        <AuthProvider>{children}</AuthProvider>
+        <ClientLayout>
+          <AuthProvider>{children}</AuthProvider>
+        </ClientLayout>
       </body>
     </html>
   );

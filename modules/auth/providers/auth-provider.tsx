@@ -4,17 +4,29 @@ import React, { createContext, useEffect, useState } from 'react';
 import { User } from '@supabase/supabase-js';
 import { createClient } from '@/core/api/supabase/client';
 import { AuthContextType } from '../utils/auth.utils';
-import { useRouter } from 'next/navigation';
 
 export const AuthContext = createContext<AuthContextType | null>(null);
+
+function LoadingScreen() {
+    return (
+        <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-purple-50 via-white to-blue-50">
+            <div className="flex flex-col items-center space-y-4">
+                <div className="h-8 w-8 animate-spin rounded-full border-4 border-purple-200 border-t-purple-600"></div>
+                <p className="text-gray-600">Loading...</p>
+            </div>
+        </div>
+    );
+}
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
     const [user, setUser] = useState<User | null>(null);
     const [loading, setLoading] = useState(true);
+    const [mounted, setMounted] = useState(false);
     const supabase = createClient();
-    const router = useRouter();
 
     useEffect(() => {
+        setMounted(true);
+        
         const initAuth = async () => {
             try {
                 const {
@@ -34,16 +46,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             data: { subscription },
         } = supabase.auth.onAuthStateChange((_event, session) => {
             setUser(session?.user ?? null);
-            setLoading(false);
-
-            // Auth state değiştiğinde router'ı refresh et
-            router.refresh();
         });
 
         return () => {
             subscription.unsubscribe();
         };
-    }, [supabase, router]);
+    }, [supabase]);
 
     const signInWithGoogle = async () => {
         try {
@@ -54,13 +62,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                 },
             });
 
-            if (error) {
-                console.error('Sign in error:', error);
-                throw error;
-            }
+            if (error) throw error;
         } catch (error) {
             console.error('Sign in error:', error);
-            throw error;
         }
     };
 
@@ -68,18 +72,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         try {
             await supabase.auth.signOut();
             setUser(null);
-            router.push('/');
         } catch (error) {
             console.error('Sign out error:', error);
-            throw error;
         }
     };
+
+    if (!mounted || loading) {
+        return <LoadingScreen />;
+    }
 
     return (
         <AuthContext.Provider
             value={{
                 user,
-                loading,
+                loading: false,
                 signInWithGoogle,
                 signOut,
             }}
